@@ -26,6 +26,7 @@
     "@types/figlet": "^1.7.0",
     "chalk": "^5.4.1",
     "figlet": "^1.8.0",
+    "gradient-string": "^3.0.0",
     "nanospinner": "^1.2.2",
     "tsup": "^8.3.6"
   }
