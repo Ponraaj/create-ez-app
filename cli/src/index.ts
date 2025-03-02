@@ -7,11 +7,12 @@ import {
   spinner,
   isCancel,
 } from '@clack/prompts';
+import { execSync } from 'child_process';
 import chalk from 'chalk';
 import figlet from 'figlet';
 import { pastel } from 'gradient-string';
-import createBackend from './commands/createBackend.js';
 import initGit from './commands/initGit.js';
+import initBackend from './commands/backend/index.js';
 
 const gradientText =
   '\n' +
@@ -25,6 +26,34 @@ const gradientText =
 intro(gradientText);
 
 let isCancelling = false;
+
+function detectAvailableRuntimes(): { value: string; label: string }[] {
+  const runtimeOptions = [];
+
+  try {
+    execSync('node -v', { stdio: 'ignore' });
+    runtimeOptions.push({ value: 'node', label: '🟢 Node.js' });
+  } catch {
+    console.log(chalk.grey('Node is not available'));
+  }
+
+  // TODO: Not now
+  // try {
+  //   execSync('bun -v', { stdio: 'ignore' });
+  //   runtimeOptions.push({ value: 'bun', label: '🍞 Bun' });
+  // } catch {
+  //   console.log(chalk.grey('Bun is not available'));
+  // }
+  // TODO: Not now
+  // try {
+  //   execSync('deno --version', { stdio: 'ignore' });
+  //   runtimeOptions.push({ value: 'deno', label: '🦕 Deno' });
+  // } catch {
+  //   console.log(chalk.grey('Deno is not available'));
+  // }
+
+  return runtimeOptions;
+}
 
 process.on('SIGINT', async () => {
   if (isCancelling) return;
@@ -68,30 +97,33 @@ async function main() {
     console.log(chalk.cyan('🚀 Welcome to EZ App CLI Setup!'));
     console.log(chalk.gray('-----------------------------------\n'));
 
-    const projectName = await promptWrapper(() =>
-      text({
-        message: chalk.blue('📌 Name of the project?'),
-        placeholder: 'my-app',
-        validate: (value) => {
-          if (!value) return '⚠️ Project name is required.';
-          if (!/^[a-z0-9-]+$/.test(value))
-            return '⚠️ Project name must be lowercase without spaces.';
-          return undefined;
-        },
-        initialValue: 'my-app',
-      }),
+    let projectName = await promptWrapper(
+      async () =>
+        (await text({
+          message: chalk.blue('📌 Name of the project?'),
+          placeholder: 'ez-app',
+          validate: (value) => {
+            if (!value.trim()) return undefined;
+            if (!/^[a-z0-9-]+$/.test(value))
+              return '⚠️ Project name must be lowercase without spaces.';
+            return undefined;
+          },
+        })) as string,
     );
 
-    const directoryStructure = await promptWrapper(() =>
-      select({
-        message: chalk.blue('📁 Choose your directory structure'),
-        options: [
-          { value: 'client-server', label: '🖥️ client/server (default)' },
-          { value: 'frontend-backend', label: '🌐 frontend/backend' },
-          { value: 'custom', label: '⚙️ Custom' },
-        ],
-        initialValue: 'client-server',
-      }),
+    projectName = projectName || 'ez-app';
+
+    const directoryStructure = await promptWrapper(
+      async () =>
+        (await select({
+          message: chalk.blue('📁 Choose your directory structure'),
+          options: [
+            { value: 'client-server', label: '🖥️ client/server (default)' },
+            { value: 'frontend-backend', label: '🌐 frontend/backend' },
+            { value: 'custom', label: '⚙️ Custom' },
+          ],
+          initialValue: 'client-server',
+        })) as string,
     );
 
     let frontendDir = 'client',
@@ -133,81 +165,127 @@ async function main() {
       );
     }
 
-    const useTypescript = await promptWrapper(() =>
-      confirm({
-        message: chalk.yellow('⚡ Would you like to use TypeScript? (Rly ??)'),
-      }),
+    const useTS = await promptWrapper(
+      async () =>
+        (await confirm({
+          message: chalk.yellow(
+            '⚡ Would you like to use TypeScript? (Rly ??)',
+          ),
+        })) as boolean,
     );
 
-    const runtime = await promptWrapper(() =>
-      select({
+    let beFrameworkOptions: { value: string; label: string }[];
+
+    const runtime = await promptWrapper(async () => {
+      const availableRuntimes = detectAvailableRuntimes();
+
+      if (availableRuntimes.length === 0) {
+        chalk.red(
+          '❌ No supported runtimes found. Install Node.js, Bun, or Deno.',
+        );
+        process.exit(0);
+      }
+      return (await select({
         message: chalk.blue('⚙️ Choose a backend runtime: '),
-        options: [
-          { value: 'node', label: '🟢 Node.js' },
-          { value: 'bun', label: '🍞 Bun' },
-          { value: 'deno', label: '🦕 Deno' },
-        ],
+        options: availableRuntimes,
         initialValue: 'node',
-      }),
+      })) as string;
+    });
+
+    if (runtime === 'node') {
+      beFrameworkOptions = [
+        { value: 'express', label: 'Express' },
+        { value: 'fastify', label: 'Fastify (Faster than Express)' },
+        // { value: 'koa', label: 'Koa (Minimal Alternative)' },
+        // { value: 'hapi', label: 'Hapi (Enterprise Focused)' },
+      ];
+    }
+    // else if (runtime === 'bun') {
+    //   beFrameworkOptions = [
+    //     { value: 'hono', label: 'Hono (Best for Bun, super fast ⚡)' },
+    //     { value: 'express', label: 'Express (Compatible but slower)' },
+    //     { value: 'fastify', label: 'Fastify (Fast but Bun-native is better)' },
+    //   ];
+    // } else if (runtime === 'deno') {
+    //   beFrameworkOptions = [
+    //     { value: 'oak', label: 'Oak (Deno’s default choice)' },
+    //     { value: 'hono', label: 'Hono (Deno compatible & lightweight)' },
+    //     { value: 'abc', label: 'ABC (Simple and tiny)' },
+    //     { value: 'none', label: 'None (Use Deno’s built-in server)' },
+    //   ];
+    // }
+    //
+    const beFramework = await promptWrapper(
+      async () =>
+        (await select({
+          message: `Choose a backend framework for ${runtime}:`,
+          options: beFrameworkOptions,
+          initialValue: beFrameworkOptions[0]?.value,
+        })) as string,
     );
 
-    const useDB = await promptWrapper(() =>
-      confirm({
-        message: chalk.yellow('🗃️ Will you use a database for the backend?'),
-      }),
+    const useDB = await promptWrapper(
+      async () =>
+        (await confirm({
+          message: chalk.yellow('🗃️ Will you use a database for the backend?'),
+        })) as boolean,
     );
 
     let orm, db;
 
     if (useDB) {
-      orm = await promptWrapper(() =>
-        select({
-          message: chalk.blue('📊 Choose an ORM: '),
-          options: [
-            { value: 'prisma', label: '✨ Prisma' },
-            { value: 'drizzle', label: '💧 Drizzle' },
-            { value: 'none', label: '🚀 None (Raw Queries)' },
-          ],
-        }),
+      orm = await promptWrapper(
+        async () =>
+          (await select({
+            message: chalk.blue('📊 Choose an ORM: '),
+            options: [
+              { value: 'prisma', label: '✨ Prisma' },
+              // { value: 'drizzle', label: '💧 Drizzle' },
+              // { value: 'none', label: '🚀 None (Raw Queries)' },
+            ],
+          })) as string,
       );
 
       if (orm !== 'none') {
-        db = await promptWrapper(() =>
-          select({
-            message: chalk.blue('💾 Choose a database: '),
-            options: [
-              { value: 'postgresql', label: '🐘 PostgreSQL' },
-              { value: 'mysql', label: '🐬 MySQL' },
-              { value: 'sqlite', label: '🗂️ SQLite' },
-              { value: 'mongodb', label: '🍃 MongoDB' },
-            ],
-          }),
+        db = await promptWrapper(
+          async () =>
+            (await select({
+              message: chalk.blue('💾 Choose a database: '),
+              options: [
+                { value: 'postgresql', label: '🐘 PostgreSQL' },
+                { value: 'mysql', label: '🐬 MySQL' },
+                { value: 'sqlite', label: '🗂️ SQLite' },
+                { value: 'mongodb', label: '🍃 MongoDB' },
+              ],
+            })) as string,
         );
       }
     }
 
-    const initializeGit = await promptWrapper(() =>
-      confirm({
-        message: chalk.yellow('🔧 Do you want to initialize a Git repository?'),
-      }),
+    const initializeGit = await promptWrapper(
+      async () =>
+        await confirm({
+          message: chalk.yellow(
+            '🔧 Do you want to initialize a Git repository?',
+          ),
+        }),
     );
 
-    console.log();
     const s = spinner();
     s.start(pastel('⚙️ Creating your project...'));
 
-    await createBackend({
+    await initBackend({
+      projectDir: projectName as string,
       backendDir,
       runtime,
-      useTypescript,
+      beFramework,
+      useTS,
       useDB,
       db,
       orm,
     });
 
     if (initializeGit) await initGit();
-
-    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     s.stop(chalk.green('✅ Done!'));
 
@@ -220,8 +298,8 @@ async function main() {
           `- ${chalk.bold(backendDir)}: Backend (${useDB ? `with ${orm as string} and ${db as string}` : 'no database'})\n\n` +
           `🚀 Next steps:\n` +
           `1. cd ${chalk.bold(projectName)}\n` +
-          `2. Install dependencies: ${chalk.bold('pnpm install')}\n` +
-          `3. Start developing: ${chalk.bold('pnpm dev')}\n`,
+          `2. Install dependencies: ${chalk.bold('npm install')}\n` +
+          `3. Start developing: ${chalk.bold('npm dev')}\n`,
       ),
     );
   } catch (error) {
@@ -231,4 +309,6 @@ async function main() {
   }
 }
 
-main();
+main().catch((e) => {
+  console.error(e);
+});
