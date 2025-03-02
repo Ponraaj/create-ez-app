@@ -1,6 +1,5 @@
 {
-  "name": "create-ez-app",
-  "version": "1.0.0",
+  "name": "@create-ez-app/repo",
   "description": "",
   "type": "module",
   "scripts": {
