@@ -1,15 +1,18 @@
 {
   "name": "create-ez-app",
   "version": "0.0.1",
-  "description": "",
+  "description": "Create web application \"EZ\"ly for different runtimes & frameworks with a single command",
   "type": "module",
   "bin": {
-    "create-ez-app": "index.js"
+    "create-ez-app": "./dist/index.js"
   },
   "files": [
     "index.js",
     "cli",
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE",
+    "package.json"
   ],
   "scripts": {
     "typescheck": "tsc",
@@ -26,12 +29,17 @@
   "engines": {
     "node": ">= 20.18 "
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "create-ez-app",
+    "node",
+    "typescript",
+    "express"
+  ],
+  "author": "Pon Raaj <ponraajvetrivel@gmail.com>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ponraaj/create-ez-app.git",
-    "directory": "cli/"
+    "directory": "cli"
   },
   "license": "MIT",
   "dependencies": {
