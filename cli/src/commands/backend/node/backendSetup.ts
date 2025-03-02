@@ -22,7 +22,8 @@ async function setupBackend({
   );
 
   const dependencies = [beFramework];
-  const devDependencies = useTS ? [`@types/${beFramework}`] : [];
+  const devDependencies = [];
+  if (beFramework === 'express') devDependencies.push('@types/express');
 
   await installDependencies({
     backendPath,
