@@ -1,1 +1,1 @@
-### ⚠ In dev
+./cli/README.md
