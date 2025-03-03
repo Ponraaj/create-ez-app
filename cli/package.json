@@ -1,6 +1,6 @@
 {
   "name": "create-ez-app",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Create web application \"EZ\"ly for different runtimes & frameworks with a single command",
   "type": "module",
   "exports": "./dist/index.js",
