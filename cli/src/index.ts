@@ -286,7 +286,7 @@ async function main() {
       orm,
     });
 
-    if (initializeGit) await initGit();
+    if (initializeGit) await initGit(projectName);
 
     s.stop(chalk.green('✅ Done!'));
 
