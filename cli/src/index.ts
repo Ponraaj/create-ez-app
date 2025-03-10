@@ -14,6 +14,7 @@ import figlet from 'figlet';
 import { pastel } from 'gradient-string';
 import initGit from './commands/initGit.js';
 import initBackend from './commands/backend/index.js';
+import initFrontend from './commands/frontend/index.js';
 
 const gradientText =
   '\n' +
@@ -93,6 +94,14 @@ async function promptWrapper<T>(promptFunc: () => Promise<T>): Promise<T> {
   return response;
 }
 
+interface FrameworkProps {
+  framework: string;
+  useTS?: boolean;
+  useReactRouter?: boolean;
+  useShadCN?: boolean;
+  useTailWind?: boolean;
+}
+
 async function main() {
   try {
     console.log(chalk.cyan('🚀 Welcome to EZ App CLI Setup!'));
@@ -166,6 +175,55 @@ async function main() {
       );
     }
 
+    const framework = await promptWrapper(
+      async () =>
+        (await select({
+          message: chalk.magenta('🛠️ Choose a frontend framework'),
+          options: [
+            { value: 'react', label: '⚛️  React' },
+            // { value: 'next', label: '🌐 Next.js' },
+            // { value: 'svelte', label: '🔥 Svelte' },
+          ],
+        })) as string,
+    );
+
+    const frameworkOpts: FrameworkProps = {
+      framework: framework,
+    };
+
+    if (framework === 'react') {
+      const useTailWind: boolean = await promptWrapper(
+        async () =>
+          (await confirm({
+            message: chalk.cyan('🖌 Would you like to use TailWind CSS?'),
+          })) as boolean,
+      );
+      frameworkOpts.useTailWind = useTailWind;
+
+      const useReactRouter = await promptWrapper(
+        async () =>
+          (await confirm({
+            message: chalk.yellow('🚏 Would you like to use React Router?'),
+          })) as boolean,
+      );
+      frameworkOpts.useReactRouter = useReactRouter;
+
+      const useShadCN: boolean = await promptWrapper(
+        async () =>
+          (await confirm({
+            message: chalk.cyan(
+              '🎨 Would you like to use ShadCN/UI for components?',
+            ),
+          })) as boolean,
+      );
+      frameworkOpts.useShadCN = useShadCN;
+
+      // If we use ShadCN we have to use TAILWIND !!!!
+      if (useShadCN) {
+        frameworkOpts.useTailWind = useShadCN;
+      }
+    }
+
     const useTS = await promptWrapper(
       async () =>
         (await confirm({
@@ -174,6 +232,7 @@ async function main() {
           ),
         })) as boolean,
     );
+    frameworkOpts.useTS = useTS;
 
     let beFrameworkOptions: { value: string; label: string }[];
 
@@ -284,6 +343,12 @@ async function main() {
       useDB,
       db,
       orm,
+    });
+
+    await initFrontend({
+      projectDir: projectName as string,
+      frontendDir,
+      ...frameworkOpts,
     });
 
     if (initializeGit) await initGit(projectName);

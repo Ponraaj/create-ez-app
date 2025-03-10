@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
-import installDependencies from './installDep.js';
+import installDependencies from '../../utils/installDep.js';
 
 async function setupTS(projectPath: string) {
   const tsConfigPath = path.join(projectPath, 'tsconfig.json');

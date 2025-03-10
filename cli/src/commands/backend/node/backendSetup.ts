@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
-import installDependencies from './installDep.js';
+import installDependencies from '../../utils/installDep.js';
 
 interface BackendOptions {
   backendPath: string;
