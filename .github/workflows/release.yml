@@ -22,12 +22,6 @@ jobs:
       - name: Build package
         run: pnpm build
 
-      - name: Configure NPM
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
-
       - name: Create PR && Publish to NPM
         id: changesets
         uses: changesets/action@v1
