@@ -16,7 +16,7 @@
     "package.json"
   ],
   "scripts": {
-    "typescheck": "tsc",
+    "typecheck": "tsc --noEmit",
     "build": "tsup",
     "dev": "tsup --watch",
     "clean": "rm -rf dist .turbo node_modules",
@@ -25,7 +25,11 @@
     "lint:fix": "pnpm lint --fix",
     "format": "prettier '**/*.{cjs,mjs,ts,tsx,md,json}' --ignore-path ../.gitignore --ignore-unknown --no-error-on-unmatched-pattern --write",
     "format:check": "prettier '**/*.{cjs,mjs,ts,tsx,md,json}' --ignore-path ../.gitignore --ignore-unknown --no-error-on-unmatched-pattern --check",
-    "prepublishOnly": "pnpm run build"
+    "prepublishOnly": "pnpm run build",
+    "release": "changeset version",
+    "pub:beta": "pnpm build && npm publish --tag beta",
+    "pub:next": "pnpm build && npm publish --tag next",
+    "pub:release": "pnpm build && npm publis"
   },
   "engines": {
     "node": ">= 20.18 "

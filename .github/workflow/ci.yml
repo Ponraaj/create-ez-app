@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - master
+      - dev
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Run ESLint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      - run: pnpm turbo run lint
+      - run: pnpm manypkg check
+
+  prettier:
+    runs-on: ubuntu-latest
+    name: Run Prettier
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      - run: pnpm format:check
+
+  tsc:
+    runs-on: ubuntu-latest
+    name: Run Typechecker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      - run: pnpm typecheck

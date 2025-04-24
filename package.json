@@ -8,8 +8,16 @@
     "build": "turbo run build",
     "test": "turbo run test",
     "lint": "turbo run lint",
-    "format": "turbo run format",
-    "prepare": "husky"
+    "format": "turbo run format && prettier --write '*.{cjs,json}' --ignore-unknown --no-error-on-unmatched-pattern",
+    "format:check": "turbo run format:check && prettier --check '*.{cjs,json}' --ignore-unknown --no-error-on-unmatched-pattern",
+    "typecheck": "turbo run typecheck",
+    "check": "turbo lint typecheck format:check && manypkg check",
+    "prepare": "husky",
+    "prepublishOnly": "cd cli && pnpm run build",
+    "release": "cd cli && pnpm run release ",
+    "pub:beta": "cd cli && pnpm run pub:beta",
+    "pub:next": "cd cli && pnpm run pub:next",
+    "pub:release": "cd cli && pnpm run pub:release"
   },
   "keywords": [],
   "author": "Pon Raaj <ponraajvetrivel@gmail.com>",
@@ -25,9 +33,11 @@
     "**/*": "prettier --write --ignore-unknown"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.2",
     "@commitlint/cli": "^19.7.1",
     "@commitlint/config-conventional": "^19.7.1",
     "@eslint/js": "^9.21.0",
+    "@manypkg/cli": "^0.23.0",
     "@types/eslint": "^9.6.1",
     "@types/node": "^22.13.5",
     "@typescript-eslint/eslint-plugin": "^8.24.1",
