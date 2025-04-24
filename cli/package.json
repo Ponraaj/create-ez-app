@@ -29,7 +29,7 @@
     "release": "changeset version",
     "pub:beta": "pnpm build && npm publish --tag beta",
     "pub:next": "pnpm build && npm publish --tag next",
-    "pub:release": "pnpm build && npm publis"
+    "pub:release": "pnpm build && npm publish"
   },
   "engines": {
     "node": ">= 20.18 "
