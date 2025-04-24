@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: ./.github/actions/setup
 
       - name: Check for errors
@@ -26,8 +28,10 @@ jobs:
         with:
           commit: 'chore(release): version packages'
           title: 'chore(release): version packages'
+          publish: pnpm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
 
       - name: Version bumps
         if: steps.changesets.outputs.hasChangesets == 'true'
