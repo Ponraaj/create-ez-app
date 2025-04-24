@@ -1,4 +1,5 @@
 name: Setup and Install
+description: Common action for setting up Node and PNPM
 
 runs:
   using: composite
